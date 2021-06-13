@@ -1,67 +1,33 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
-
-const {Connection, Request} = require("tedious");
-
-const executeSQL = (sql, callback) => {
-  let connection = new Connection({
-    "authentication": {
-      "options": {
-        "userName": "admin",
-        "password": "AQQaqq123"
-      },
-      "type": "default"
-    },
-    "server": "10.20.10.2",
-    "options": {
-      "validateBulkLoadParameters": false,
-      "rowCollectionOnRequestCompletion": true,
-      "database": "Lorak",
-      "encrypt": true
-    }
-  });
-
-  connection.connect((err) => {
-    if (err)
-      return callback(err, null);
-
-    const request = new Request(sql, (err, rowCount, rows) => {
-      connection.close();
-
-      if (err)
-        return callback(err, null);
-
-      callback(null, {rowCount, rows});
-    });
-
-    connection.execSql(request);
-  });
-};
-
-executeSQL("SELECT * FROM api", (err, data) => {
-  if (err)
-    console.error(err);
-
-  console.log(data.rowCount);
-});
-
-app.use(express.urlencoded({
-    extended: true}))
+const sql = require('mssql')
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
 app.use(bodyParser.urlencoded({
-        extended: true
-      }));
+  extended: true
+}));
+app.use(bodyParser.json());
 
+const sqlConfig = {
+  user: 'admin',
+  password: 'AQQaqq123',
+  database: 'lorak',
+  server: '10.20.10.2',
+  trustServerCertificate: true
+}
 
-app.get('/', function(request, response) {
-    console.log(executeSQL())
-	//response.send(executeStatement())
-});
+const poolPromise = sql.connect(sqlConfig)
 
-app.post('/dupa', function(request, response) {
-    console.log(request)
-    response.send(200);
-});
+app.get('/', (req, res)=>{
+  poolPromise.then(() => sql.query(`select id_user,firstname_user,lastname_user,login_user from api`)
+  ).then(result => res.send(result.recordset)
+  ).err(e=>console.log(err))
+})
+
+app.post('/dupa', (req, res)=>{
+  const {firstName, lastName, login, pass} = req.body
+  poolPromise.then(() => sql.query(`INSERT INTO api(firstname_user,lastname_user,login_user,password_user) values('${firstName}','${lastName}','${login}', '${pass}')`)
+  ).then(result => res.send('ok')
+  )
+})
 
 app.listen(8081);
-console.log(`Running on http://0.0.0.0:8080`);
