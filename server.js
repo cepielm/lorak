@@ -20,7 +20,7 @@ const poolPromise = sql.connect(sqlConfig)
 app.get('/', (req, res)=>{
   poolPromise.then(() => sql.query(`select id_user,firstname_user,lastname_user,login_user from api`)
   ).then(result => res.send(result.recordset)
-  ).err(e=>console.log(err))
+  ).res.end()
 })
 
 app.post('/dupa', (req, res)=>{
