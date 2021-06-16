@@ -30,6 +30,7 @@ app.get('/', (req, res)=>{
   )
 })
 
+
 app.post('/dupa', (req, res)=>{
 
   const {firstName, lastName, login, pass} = req.body
