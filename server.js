@@ -30,6 +30,13 @@ app.get('/showusers', (req, res)=>{
   )
 })
 
+app.post('/login', (req, res)=>{
+
+  const {login, pass} = req.body
+  console.log(req.body)
+  res.send('ok')
+})
+
 
 app.post('/removeuser', (req, res)=>{
 
