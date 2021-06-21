@@ -34,8 +34,10 @@ app.get('/showusers', (req, res)=>{
 
 app.get('/showhierarchy_mapping', (req, res)=>{
   poolPromise.then(() => sql.query(`
-  SELECT trum.UnitCode
-  ,trum.UserId FROM tb_ref_unit_mapping trum`)
+  SELECT trum.UnitCode,CONCAT(a.firstname_user,'   ',a.lastname_user) as UserId
+  FROM tb_ref_unit_mapping trum
+  INNER JOIN Api a ON a.id_user=trum.UserId
+  `)
   ).then(result => res.send(result.recordset)
   ).catch((err)=>{
     if (err.text==="") res.send("User juz istnieje")
@@ -81,6 +83,18 @@ app.post('/adduser', (req, res)=>{
   const {firstName, lastName, login, pass} = req.body
   console.log(req.body)
   poolPromise.then(() => sql.query(`INSERT INTO api(firstname_user,lastname_user,login_user,password_user) values('${firstName}','${lastName}','${login}', '${pass}')`)
+  ).then(result => res.send('ok')
+  ).catch((err)=>{
+    if (err.text==="") res.send("mail juz istnieje")
+  })
+})
+
+
+app.post('/runProcess', (req, res)=>{
+
+  const {incrpct, unitcode} = req.body
+  console.log(req.body)
+  poolPromise.then(() => sql.query(`UPDATE tb_ref_unit SET IncrPct =${incrpct} WHERE UnitCode = '${unitcode}' exec runprocess`)
   ).then(result => res.send('ok')
   ).catch((err)=>{
     if (err.text==="") res.send("mail juz istnieje")
