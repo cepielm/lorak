@@ -2,6 +2,9 @@ const sql = require('mssql')
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+
+var auth
+
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -28,7 +31,7 @@ app.get('/showusers', (req, res)=>{
   poolPromise.then(() => sql.query(`select id_user,firstname_user,lastname_user,login_user from api`)
   ).then(result => res.send(result.recordset)
   ).catch((err)=>{
-    if (err.text==="") res.send("User juz istnieje")
+    console.log(err)
   })
 })
 
@@ -40,7 +43,7 @@ app.get('/showhierarchy_mapping', (req, res)=>{
   `)
   ).then(result => res.send(result.recordset)
   ).catch((err)=>{
-    if (err.text==="") res.send("User juz istnieje")
+    console.log(err)
   })
 })
 app.get('/showmasterunit', (req, res)=>{
@@ -51,7 +54,7 @@ app.get('/showmasterunit', (req, res)=>{
 	  ,tru.IncrPct FROM  tb_ref_unit tru`)
   ).then(result => res.send(result.recordset)
   ).catch((err)=>{
-    if (err.text==="") res.send("User juz istnieje")
+    console.log(err)
   })
 })
 app.get('/showprocess', (req, res)=>{
@@ -69,7 +72,7 @@ app.get('/showprocess', (req, res)=>{
   ,BasePayIncr FROM tb_Process`)
   ).then(result => res.send(result.recordset)
   ).catch((err)=>{
-    if (err.text==="") res.send("User juz istnieje")
+    console.log(err)
   })
 })
 
@@ -85,7 +88,7 @@ app.post('/adduser', (req, res)=>{
   poolPromise.then(() => sql.query(`INSERT INTO api(firstname_user,lastname_user,login_user,password_user) values('${firstName}','${lastName}','${login}', '${pass}')`)
   ).then(result => res.send('ok')
   ).catch((err)=>{
-    if (err.text==="") res.send("mail juz istnieje")
+    console.log(err)
   })
 })
 
@@ -97,7 +100,7 @@ app.post('/runProcess', (req, res)=>{
   poolPromise.then(() => sql.query(`UPDATE tb_ref_unit SET IncrPct =${incrpct} WHERE UnitCode = '${unitcode}' exec runprocess`)
   ).then(result => res.send('ok')
   ).catch((err)=>{
-    if (err.text==="") res.send("mail juz istnieje")
+    console.log(err)
   })
 })
 
@@ -149,4 +152,32 @@ app.get('/showunit', (req, res)=>{
   )
 })
 
-app.listen(8088);
+app.post('/login', (req, res)=>{
+  const {login, pass} = req.body
+  poolPromise.then(() => sql.query(`SELECT login_user,password_user FROM Api where login_user='${login}' and password_user='${pass}'`)
+  ).then(result => {
+    res.sendStatus(200)
+    console.log(result.rowsAffected)
+    if(result.rowsAffected == 1 ){
+      auth = 'true'
+    }
+    else{
+      auth = 'false'
+    }
+  }
+  )
+})
+
+
+app.post('/logout', (req, res)=>{
+  res.sendStatus(200)
+  auth = 'false'
+})
+
+app.get('/authenticate', (req, res)=>{
+    res.send(auth)
+})
+
+
+app.listen(8081);
+
