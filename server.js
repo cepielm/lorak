@@ -30,8 +30,56 @@ const poolPromise = sql.connect(sqlConfig)
 app.get('/showusers', (req, res)=>{
   poolPromise.then(() => sql.query(`select id_user,firstname_user,lastname_user,login_user from api`)
   ).then(result => res.send(result.recordset)
-  )
+  ).catch((err)=>{
+    console.log(err)
+  })
 })
+
+app.get('/showhierarchy_mapping', (req, res)=>{
+  poolPromise.then(() => sql.query(`
+  SELECT trum.UnitCode,CONCAT(a.firstname_user,'   ',a.lastname_user) as UserId
+  FROM tb_ref_unit_mapping trum
+  INNER JOIN Api a ON a.id_user=trum.UserId
+  `)
+  ).then(result => res.send(result.recordset)
+  ).catch((err)=>{
+    console.log(err)
+  })
+})
+app.get('/showmasterunit', (req, res)=>{
+  poolPromise.then(() => sql.query(`
+  SELECT tru.UnitCode
+	  ,tru.UnitName
+	  ,tru.UnitDescription
+	  ,tru.IncrPct FROM  tb_ref_unit tru`)
+  ).then(result => res.send(result.recordset)
+  ).catch((err)=>{
+    console.log(err)
+  })
+})
+app.get('/showprocess', (req, res)=>{
+  poolPromise.then(() => sql.query(`
+  SELECT idPayee
+  ,UnitId
+  ,UnitCode
+  ,id_user_PPM
+  ,PayPlanManagerFirstName
+  ,PayPlanManagerLastName
+  ,lastname
+  ,FirstName
+  ,BasePayFTE
+  ,BasePayIncPct
+  ,BasePayIncr FROM tb_Process`)
+  ).then(result => res.send(result.recordset)
+  ).catch((err)=>{
+    console.log(err)
+  })
+})
+
+ 
+
+
+
 
 app.post('/adduser', (req, res)=>{
 
@@ -40,7 +88,19 @@ app.post('/adduser', (req, res)=>{
   poolPromise.then(() => sql.query(`INSERT INTO api(firstname_user,lastname_user,login_user,password_user) values('${firstName}','${lastName}','${login}', '${pass}')`)
   ).then(result => res.send('ok')
   ).catch((err)=>{
-    if (err.text==="") res.send("mail juz istnieje")
+    console.log(err)
+  })
+})
+
+
+app.post('/runProcess', (req, res)=>{
+
+  const {incrpct, unitcode} = req.body
+  console.log(req.body)
+  poolPromise.then(() => sql.query(`UPDATE tb_ref_unit SET IncrPct =${incrpct} WHERE UnitCode = '${unitcode}' exec runprocess`)
+  ).then(result => res.send('ok')
+  ).catch((err)=>{
+    console.log(err)
   })
 })
 
@@ -120,3 +180,4 @@ app.get('/authenticate', (req, res)=>{
 
 
 app.listen(8081);
+
