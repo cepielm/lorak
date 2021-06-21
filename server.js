@@ -41,6 +41,7 @@ app.post('/login', (req, res)=>{
 app.post('/removeuser', (req, res)=>{
 
   const {firstName, lastName, login, pass} = req.body
+  console.log('request')
   console.log(req.body)
   poolPromise.then(() => sql.query(`INSERT INTO api(firstname_user,lastname_user,login_user,password_user) values('${firstName}','${lastName}','${login}', '${pass}')`)
   ).then(result => res.send('ok')
