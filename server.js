@@ -2,6 +2,9 @@ const sql = require('mssql')
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+
+var auth
+
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -27,7 +30,7 @@ const poolPromise = sql.connect(sqlConfig)
 app.get('/showusers', (req, res)=>{
   poolPromise.then(() => sql.query(`select id_user,firstname_user,lastname_user,login_user from api`)
   ).then(result => res.send(result.recordset)
-  ).res.end()
+  )
 })
 
 app.post('/adduser', (req, res)=>{
@@ -88,5 +91,32 @@ app.get('/showunit', (req, res)=>{
   ).then(result => res.send(result.recordset)
   )
 })
+
+app.post('/login', (req, res)=>{
+  const {login, pass} = req.body
+  poolPromise.then(() => sql.query(`SELECT login_user,password_user FROM Api where login_user='${login}' and password_user='${pass}'`)
+  ).then(result => {
+    res.sendStatus(200)
+    console.log(result.rowsAffected)
+    if(result.rowsAffected == 1 ){
+      auth = 'true'
+    }
+    else{
+      auth = 'false'
+    }
+  }
+  )
+})
+
+
+app.post('/logout', (req, res)=>{
+  res.sendStatus(200)
+  auth = 'false'
+})
+
+app.get('/authenticate', (req, res)=>{
+    res.send(auth)
+})
+
 
 app.listen(8081);
