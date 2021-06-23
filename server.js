@@ -104,14 +104,12 @@ app.post('/runProcess', (req, res)=>{
   })
 })
 
-app.post('/removeuser', (req, res)=>{
-
-  const {firstName, lastName, login, pass} = req.body
-  console.log(req.body)
-  poolPromise.then(() => sql.query(`INSERT INTO api(firstname_user,lastname_user,login_user,password_user) values('${firstName}','${lastName}','${login}', '${pass}')`)
-  ).then(result => res.send('ok')
+app.post("/removeuser", (req, res) => {
+  const selectedUsersIds = req.body.selectedUsersIds
+  poolPromise.then(() => sql.query(`DELETE FROM api WHERE id_user IN (${selectedUsersIds})`)
+  ).then(result => res.sendStatus(200)
   ).catch((err)=>{
-    if (err.text==="") res.send("mail juz istnieje")
+    console.log(err)
   })
 })
 
@@ -157,7 +155,6 @@ app.post('/login', (req, res)=>{
   poolPromise.then(() => sql.query(`SELECT login_user,password_user FROM Api where login_user='${login}' and password_user='${pass}'`)
   ).then(result => {
     res.sendStatus(200)
-    console.log(result.rowsAffected)
     if(result.rowsAffected == 1 ){
       auth = 'true'
     }
