@@ -96,7 +96,6 @@ app.post('/adduser', (req, res)=>{
 app.post('/runProcess', (req, res)=>{
 
   const {incrpct, unitcode} = req.body
-  console.log(req.body)
   poolPromise.then(() => sql.query(`UPDATE tb_ref_unit SET IncrPct =${incrpct} WHERE UnitCode = '${unitcode}' exec runprocess`)
   ).then(result => res.send('ok')
   ).catch((err)=>{
@@ -113,6 +112,17 @@ app.post("/removeuser", (req, res) => {
   })
 })
 
+app.post("/changeunit", (req, res) => {
+  const unitCode = req.body.unitCode
+  const idPayee = req.body.idPayee
+  poolPromise.then(() => sql.query(`UPDATE Payee SET Unit_code ='${unitCode}' WHERE idPayee =${idPayee}`)
+  ).then(result => res.sendStatus(200)
+  ).catch((err)=>{
+    console.log(err)
+  })
+})
+
+
 
 app.get('/showhierarchy', (req, res)=>{
   poolPromise.then(() => sql.query(`
@@ -127,7 +137,7 @@ app.get('/showhierarchy', (req, res)=>{
 app.get('/showpayee', (req, res)=>{
   poolPromise.then(() => sql.query(`
   SELECT
-  is_active
+  idPayee
   ,lastname
   ,firstname
   ,email
